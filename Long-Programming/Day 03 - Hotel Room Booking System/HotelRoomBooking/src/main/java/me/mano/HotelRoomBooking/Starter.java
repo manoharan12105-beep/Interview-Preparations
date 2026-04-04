@@ -22,12 +22,14 @@ public class Starter {
         System.out.println("Welcome to Hotel Room Booking");
 
         while(true) {
+          System.out.println("==== Main Menu ====");
           System.out.println("1) Register.");
           System.out.println("2) Login.");
           System.out.println("3) Exit.");
 
           int choice = scanner.nextInt();
           scanner.nextLine();
+          System.out.println();
 
           switch (choice) {
 
@@ -36,10 +38,10 @@ public class Starter {
               System.out.print("Enter Username : ");
               String username = scanner.nextLine();
 
-              System.out.println("Enter Mail Id : ");
+              System.out.print("Enter Mail Id : ");
               String email = scanner.nextLine();
 
-              System.out.println("Enter Password : ");
+              System.out.print("Enter Password : ");
               String pass = scanner.nextLine();
 
               service.createUser(username, email, pass);
@@ -49,10 +51,10 @@ public class Starter {
             
             //Login
             case 2 : {
-              System.out.println("Enter Mail Id : ");
+              System.out.print("Enter Mail Id : ");
               String email = scanner.nextLine();
 
-              System.out.println("Enter Password : ");
+              System.out.print("Enter Password : ");
               String pass = scanner.nextLine();
 
               currentUser = service.validate(email, pass) ;
@@ -185,6 +187,8 @@ public class Starter {
             default : {
               System.out.println("Invalid Input : ");
             }
+            System.out.println();
+
           }
         }
     }
