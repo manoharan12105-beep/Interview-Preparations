@@ -1,0 +1,88 @@
+==== Welcome to Hotel Room Booking ====
+1) Register.
+2) Login.
+3) Exit.
+
+1
+Enter Username : Doni
+Enter Mail Id : anthonydoni@gmail.com
+Enter Password : doni@2006
+
+1) Register.
+2) Login.
+3) Exit.
+
+2
+Enter Mail Id : anthonydoni@gmail.com
+Enter Password : doni@2006
+Login Successful
+
+==== USER MENU ====
+1. View Available Rooms
+2. Book Room
+3. View My Bookings
+4. Cancel Booking
+5. Logout
+1
+
+==== Available Rooms: ====
+ID | Type | Price
+1 | Single | 1000.0
+2 | Double | 1750.0
+3 | Deluxe | 2500.0
+4 | Luxury | 5000.0
+5 | Single | 1250.0
+6 | Single | 1050.0
+7 | Single | 1100.0
+8 | Double | 1500.0
+9 | Double | 1950.0
+10 | Deluxe | 2750.0
+11 | Deluxe | 3000.0
+12 | Luxury | 4500.0
+14 | Luxury | 5250.0
+
+
+==== USER MENU ====
+1. View Available Rooms
+2. Book Room
+3. View My Bookings
+4. Cancel Booking
+5. Logout
+
+2
+Enter Room ID: 1
+Enter Check-in (yyyy-mm-dd): 2026-04-04
+Enter Check-out (yyyy-mm-dd): 2026-04-06
+Booking successful!
+
+==== USER MENU ====
+1. View Available Rooms
+2. Book Room
+3. View My Bookings
+4. Cancel Booking
+5. Logout
+
+3
+==== Your Bookings ====
+Booking ID: 2
+Room ID: 1
+Check-in: 2026-04-04
+Check-out: 2026-04-06
+Total Price: 2000.0
+Status: BOOKED
+
+==== USER MENU ====
+1. View Available Rooms
+2. Book Room
+3. View My Bookings
+4. Cancel Booking
+5. Logout
+
+5
+Logged out!
+1) Register.
+2) Login.
+3) Exit.
+
+3
+Thank you!!
