@@ -45,7 +45,7 @@ public class ServiceLayer {
 
 
   /**
-   * Login Validation Method
+   * User Method - Login Validation Method
    * @param email
    * @param password
    * @return
@@ -69,7 +69,7 @@ public class ServiceLayer {
   }
 
 
-  // Shows all Available Room Information
+  // User method - Shows all Available Room Information
   public void viewAvailableRooms() {
     List<Room> rooms = roomRepo.findAll();
 
@@ -85,7 +85,7 @@ public class ServiceLayer {
 
 
   /**
-   * Room Booking
+   * User method - Room Booking
    * @param userId
    * @param roomId
    * @param checkIn
@@ -122,7 +122,7 @@ public class ServiceLayer {
 
 
   /**
-   * Show all Rooms booked by a User
+   * User method - Show all Rooms booked by a User
    * @param userId
    */
   public void getUserBookings(int userId) {
@@ -146,7 +146,7 @@ public class ServiceLayer {
 
 
   /**
-   * Booking Cancellation
+   * User method - Booking Cancellation
    * @param bookingId
    */
   public void cancelBooking(int bookingId) {
