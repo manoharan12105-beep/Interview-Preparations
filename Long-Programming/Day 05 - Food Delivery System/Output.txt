@@ -1,0 +1,191 @@
+====MENU====
+1) Register
+2) Login
+3) Exit
+Enter a choice : 1
+Enter Name : Mano
+Enter Password : mano123
+Enter address : Chennai
+Enter Phone no : 9876543210
+User Registered Successfully with User ID : 1
+
+
+====MENU====
+1) Register
+2) Login
+3) Exit
+Enter a choice : 2
+
+1) Admin Login
+2) Manager Login
+3) Customer Login
+4) Back to Main Menu
+Enter a choice : 1
+Enter Admin ID : ADMIN
+Enter Admin Password : Admin123_
+Admin Login Successful
+
+
+====Admin Menu====
+1) Add Restaurant
+2) View Restaurants
+3) Logout
+Enter a choice : 1
+Enter Restaurant name : 
+Food Palace
+Enter Manager Id : 
+manager1
+Enter Password : 
+123
+Restaurant Added Successfully with Restaurant ID : 1
+
+
+====Admin Menu====
+1) Add Restaurant
+2) View Restaurants
+3) Logout
+Enter a choice : 3
+Admin Logged Out Successfully
+
+
+====MENU====
+1) Register
+2) Login
+3) Exit
+Enter a choice : 2
+
+1) Admin Login
+2) Manager Login
+3) Customer Login
+4) Back to Main Menu
+Enter a choice : 2
+Enter Manager ID : 
+manager1
+Enter Manager Password : 
+123
+Manager Login Successful
+
+
+====Manager Menu====
+1) Add Food Item
+2) Remove Food Item
+3) View Food Items
+4) Update Delivery Status
+5) Logout
+Enter a choice : 1
+Enter Food Name : 
+Burger
+Enter Food Price : 
+50
+Enter Food Category (Veg / Non-Veg / Juice / Dessert): 
+Veg
+Food Item Added Successfully with Food ID : 1
+
+
+====Manager Menu====
+1) Add Food Item
+2) Remove Food Item
+3) View Food Items
+4) Update Delivery Status
+5) Logout
+Enter a choice : 5
+Manager Logged Out Successfully
+
+
+====MENU====
+1) Register
+2) Login
+3) Exit
+Enter a choice : 2
+
+1) Admin Login
+2) Manager Login
+3) Customer Login
+4) Back to Main Menu
+Enter a choice : 3
+Enter User ID : 
+1
+Enter User Password : 
+mano123
+Customer Login Successful
+
+
+====Customer Menu====
+1) View Restaurants
+2) Choose a Restaurant
+3) Logout
+Enter a choice : 1
+Restaurant ID : 1
+Restaurant Name : Food Palace
+Manager ID : manager1
+
+
+====Customer Menu====
+1) View Restaurants
+2) Choose a Restaurant
+3) Logout
+Enter a choice : 2
+Enter Restaurant ID : 
+1
+Restaurant Selected Successfully
+
+Food ID : 1
+Food Name : Burger
+Food Price : 50
+Food Category : Veg
+
+
+====Order Menu====
+1) Place order
+2) Delivery Status
+3) Back to Customer Menu
+Enter a choice : 1
+Food Items Available : 
+Food ID : 1
+Food Name : Burger
+Food Price : 50
+Food Category : Veg
+
+Enter Food ID to Order : 
+1
+Enter Amount : 
+2
+Order Placed Successfully with Order ID : 1
+
+
+====Order Menu====
+1) Place order
+2) Delivery Status
+3) Back to Customer Menu
+Enter a choice : 2
+Order ID : 1
+Food ID : 1
+Amount : 2
+Price : 50
+Status : Placed
+
+
+
+
+
+After Manager Updates :
+
+====Manager Menu====
+Enter a choice : 4
+Enter Order ID : 
+1
+Enter new status (Preparing / Out / Delivered) : 
+Delivered
+Status Updated Successfully
+
+
+
+Customer checks again :
+
+====Order Menu====
+Enter a choice : 2
+Order ID : 1
+Food ID : 1
+Amount : 2
+Price : 50
+Status : Delivered
