@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 
 import me.mano.electricity_billing_system.entity.User;
 import me.mano.electricity_billing_system.repo.UserRepo;
-import java.util.Optional;
 
 @Service
 public class UserService {
