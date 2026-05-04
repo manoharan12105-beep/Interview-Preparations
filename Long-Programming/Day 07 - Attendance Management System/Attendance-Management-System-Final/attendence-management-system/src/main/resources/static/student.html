@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | CSE B Attendance</title>
+    <meta name="description" content="Student attendance dashboard - Mark attendance and view your records.">
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="student-body">
+    <!-- Floating Orbs Background -->
+    <div class="floating-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="student-container">
+        <!-- Header with Avatar & Greeting -->
+        <div class="student-header anim-stagger anim-delay-1">
+            <div class="student-header-left">
+                <div class="user-avatar" id="userAvatar"></div>
+                <div class="greeting-text">
+                    <span class="greeting-line" id="greetingLine">Good Morning</span>
+                    <span class="greeting-name" id="studentName"></span>
+                </div>
+            </div>
+            <button class="btn btn-secondary" style="width: auto" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-row anim-stagger anim-delay-2">
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-value" id="statToday"><div class="stat-skeleton"></div></div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value" id="statClassAvg"><div class="stat-skeleton"></div></div>
+                <div class="stat-label">Class Average</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="statClassCount"><div class="stat-skeleton"></div></div>
+                <div class="stat-label">Class Present</div>
+            </div>
+        </div>
+
+        <!-- Mark Attendance Card -->
+        <div class="glass-panel mark-attendance-card anim-stagger anim-delay-3">
+            <h3>Mark Attendance</h3>
+
+            <!-- Status Badge -->
+            <div id="statusBadge" class="status-badge closed">
+                <span class="status-dot"></span>
+                <span id="statusText">Checking...</span>
+            </div>
+
+            <form id="markAttendanceForm">
+                <div class="input-group" style="text-align: left;">
+                    <label for="studentNameInput">Student Name</label>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="studentNameInput" placeholder="Type student name to search..." autocomplete="off">
+                        <div class="autocomplete-list" id="autocompleteList"></div>
+                    </div>
+                    <div class="selected-student-badge" id="selectedBadge">
+                        <span id="selectedBadgeText"></span>
+                        <button type="button" class="clear-btn" onclick="clearSelection()" title="Clear selection">&times;</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="markBtn">
+                    <span class="btn-text">Mark Present</span>
+                </button>
+                <div id="markMessageContainer" style="margin-top: 1rem;">
+                    <!-- Success animation will be injected here -->
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Activity Log -->
+        <div class="glass-panel activity-section anim-stagger anim-delay-4">
+            <div class="activity-header" onclick="toggleActivity()">
+                <h3>📝 Recent Activity</h3>
+                <span class="toggle-icon" id="activityToggle">▼</span>
+            </div>
+            <div id="activityList" class="activity-list" style="display: none;">
+                <!-- Activity items will be injected here -->
+                <div style="text-align: center; padding: 1rem; color: var(--gray-700); font-size: 0.85rem;">Loading...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/app.js"></script>
+    <script>
+        let allStudents = [];
+        let selectedStudent = null;
+        let highlightedIndex = -1;
+        let suppressDropdown = false;
+        let attendanceWindowStart = '09:00';
+        let attendanceWindowEnd = '09:45';
+
+        function clearSelection(noFocus) {
+            selectedStudent = null;
+            document.getElementById('selectedBadge').classList.remove('visible');
+            document.getElementById('selectedBadgeText').innerText = '';
+            document.getElementById('studentNameInput').value = '';
+            if (!noFocus) {
+                document.getElementById('studentNameInput').focus();
+            }
+        }
+
+        function closeDropdown() {
+            document.getElementById('autocompleteList').classList.remove('open');
+            highlightedIndex = -1;
+        }
+
+        function selectStudent(student) {
+            selectedStudent = student;
+            const fullName = student.firstName + ' ' + student.lastName;
+            document.getElementById('studentNameInput').value = fullName;
+            document.getElementById('selectedBadge').classList.add('visible');
+            document.getElementById('selectedBadgeText').innerText = fullName + ' (' + student.sprno + ')';
+            closeDropdown();
+        }
+
+        function renderDropdown(students) {
+            const list = document.getElementById('autocompleteList');
+            highlightedIndex = -1;
+            if (students.length === 0) {
+                list.innerHTML = '<div class="autocomplete-empty">No students found</div>';
+                list.classList.add('open');
+                return;
+            }
+            list.innerHTML = students.map((s, i) =>
+                `<div class="autocomplete-item" data-index="${i}" onmousedown="selectStudent(allStudents.filtered[${i}])">
+                    <span class="student-name">${s.firstName} ${s.lastName}</span>
+                    <span class="student-sprno">${s.sprno}</span>
+                </div>`
+            ).join('');
+            list.classList.add('open');
+        }
+
+        // Time-based greeting
+        function getGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return '☀️ Good Morning';
+            if (hour < 17) return '🌤️ Good Afternoon';
+            return '🌙 Good Evening';
+        }
+
+        // Get user initials for avatar
+        function getInitials(firstName, lastName) {
+            return ((firstName?.[0] || '') + (lastName?.[0] || '')).toUpperCase();
+        }
+
+        // Update attendance window status badge
+        function updateStatusBadge() {
+            const badge = document.getElementById('statusBadge');
+            const text = document.getElementById('statusText');
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const mins = String(now.getMinutes()).padStart(2, '0');
+            const currentTime = `${hours}:${mins}`;
+
+            if (currentTime >= attendanceWindowStart && currentTime <= attendanceWindowEnd) {
+                badge.className = 'status-badge open';
+                // Calculate remaining minutes
+                const [endH, endM] = attendanceWindowEnd.split(':').map(Number);
+                const endMins = endH * 60 + endM;
+                const nowMins = now.getHours() * 60 + now.getMinutes();
+                const remaining = endMins - nowMins;
+                text.innerText = `Window Open — ${remaining} min remaining`;
+            } else {
+                badge.className = 'status-badge closed';
+                const formatAmPm = (t) => {
+                    let [h, m] = t.split(':');
+                    let isPM = parseInt(h) >= 12;
+                    let hr = parseInt(h) % 12 || 12;
+                    return `${String(hr).padStart(2,'0')}:${m} ${isPM ? 'PM' : 'AM'}`;
+                };
+                text.innerText = `Window Closed — opens at ${formatAmPm(attendanceWindowStart)}`;
+            }
+        }
+
+        // Toggle activity log
+        function toggleActivity() {
+            const list = document.getElementById('activityList');
+            const icon = document.getElementById('activityToggle');
+            if (list.style.display === 'none') {
+                list.style.display = 'flex';
+                icon.classList.add('expanded');
+            } else {
+                list.style.display = 'none';
+                icon.classList.remove('expanded');
+            }
+        }
+
+        // Load personal attendance status
+        async function loadStats(sprno) {
+            try {
+                const res = await fetch(`/api/attendance/my-stats?sprno=${sprno}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    // Today's personal status
+                    document.getElementById('statToday').innerText = data.todayMarked ? '✅ Present' : '⏳ Not Yet';
+                } else {
+                    throw new Error('Personal stats failed');
+                }
+            } catch (e) {
+                console.error('Failed to load personal stats', e);
+                document.getElementById('statToday').innerText = '—';
+            }
+        }
+
+        // Load class-wide statistics
+        async function loadClassStats() {
+            try {
+                const res = await fetch('/api/attendance/class-stats');
+                if (res.ok) {
+                    const data = await res.json();
+                    // Class Average
+                    const avgEl = document.getElementById('statClassAvg');
+                    avgEl.innerText = data.classAverage + '%';
+                    avgEl.className = 'stat-value ' + (data.classAverage >= 75 ? 'pct-high' : data.classAverage >= 60 ? 'pct-mid' : 'pct-low');
+                    
+                    // Class Presence Count
+                    document.getElementById('statClassCount').innerText = data.presentToday + ' / ' + data.totalStudents;
+                } else {
+                    throw new Error('Class stats failed');
+                }
+            } catch (e) {
+                console.error('Failed to load class stats', e);
+                document.getElementById('statClassAvg').innerText = '—';
+                document.getElementById('statClassCount').innerText = '—';
+            }
+        }
+
+        // Load recent activity
+        async function loadHistory(sprno) {
+            try {
+                const res = await fetch(`/api/attendance/my-history?sprno=${sprno}&limit=5`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = document.getElementById('activityList');
+                    if (data.length === 0) {
+                        list.innerHTML = '<div class="autocomplete-empty">No attendance records yet</div>';
+                        return;
+                    }
+                    list.innerHTML = data.map(entry => {
+                        const date = new Date(entry.date);
+                        const dateStr = date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+                        const timeStr = entry.markedAt ? entry.markedAt.substring(0, 5) : '—';
+                        return `<div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div class="activity-info">
+                                <div class="activity-date">${dateStr}</div>
+                                <div class="activity-meta">Marked by ${entry.attendanceMarkedBy || 'self'}</div>
+                            </div>
+                            <div class="activity-time">${timeStr}</div>
+                        </div>`;
+                    }).join('');
+                } else {
+                    throw new Error('History request failed');
+                }
+            } catch (e) {
+                console.error('Failed to load history', e);
+                document.getElementById('activityList').innerHTML = '<div class="autocomplete-empty">Could not load activity</div>';
+            }
+        }
+
+        // Fetch all students once on page load for instant filtering
+        async function loadStudents() {
+            try {
+                const res = await fetch('/api/students/search?q=');
+                if (res.ok) {
+                    const data = await res.json();
+                    allStudents = data.filter(s => s.sprno && s.sprno.startsWith('23CS'));
+                }
+            } catch (e) { console.error('Failed to load students', e); }
+        }
+
+        (async function init() {
+            // Check auth
+            let user = JSON.parse(sessionStorage.getItem('user'));
+            if(!user) {
+                try {
+                    const res = await fetch('/api/users/me');
+                    if(res.ok) {
+                        user = await res.json();
+                        sessionStorage.setItem('user', JSON.stringify(user));
+                    } else {
+                        window.location.href = '/index.html';
+                        return;
+                    }
+                } catch(e) { window.location.href = '/index.html'; return; }
+            }
+            
+            if(!user || user.role !== 'ROLE_STUDENT') {
+                window.location.href = '/index.html';
+                return;
+            }
+            
+            // Set greeting and avatar
+            document.getElementById('greetingLine').innerText = getGreeting();
+            document.getElementById('studentName').innerText = user.firstName + ' ' + (user.lastName || '');
+
+            // Avatar initials
+            document.getElementById('userAvatar').innerText = getInitials(user.firstName, user.lastName);
+
+            // Update time status every second
+            setInterval(updateStatusBadge, 1000);
+            updateStatusBadge();
+
+            // Load students for autocomplete
+            await loadStudents();
+
+            // Load stats and history
+            if (user.sprno) {
+                loadStats(user.sprno);
+                loadHistory(user.sprno);
+            } else {
+                console.warn('User SPRNO missing, skipping personal stats load');
+                document.getElementById('statToday').innerText = 'N/A';
+                document.getElementById('activityList').innerHTML = '<div class="autocomplete-empty">Activity unavailable (No SPRNO)</div>';
+            }
+            
+            // Always load class stats
+            loadClassStats();
+
+        // Fetch current active duration window
+        async function fetchWindow() {
+            try {
+                const res = await fetch('/api/settings/attendance-time');
+                if(res.ok) {
+                    const data = await res.json();
+                    attendanceWindowStart = data.startTime;
+                    attendanceWindowEnd = data.endTime;
+                    updateStatusBadge();
+                }
+            } catch(e) { console.error(e); }
+        }
+        fetchWindow();
+
+        // Autocomplete logic
+        const nameInput = document.getElementById('studentNameInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+
+        nameInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            selectedStudent = null;
+            document.getElementById('selectedBadge').classList.remove('visible');
+
+            if (query.length === 0) {
+                allStudents.filtered = [...allStudents];
+                renderDropdown(allStudents.filtered);
+                return;
+            }
+
+            const filtered = allStudents.filter(s => {
+                const fullName = (s.firstName + ' ' + s.lastName).toLowerCase();
+                return fullName.includes(query) || s.sprno.toLowerCase().includes(query);
+            });
+            allStudents.filtered = filtered;
+            renderDropdown(filtered);
+        });
+
+        nameInput.addEventListener('focus', () => {
+            if (suppressDropdown) {
+                suppressDropdown = false;
+                return;
+            }
+            if (!selectedStudent) {
+                const query = nameInput.value.trim().toLowerCase();
+                let filtered;
+                if (query.length === 0) {
+                    filtered = [...allStudents];
+                } else {
+                    filtered = allStudents.filter(s => {
+                        const fullName = (s.firstName + ' ' + s.lastName).toLowerCase();
+                        return fullName.includes(query) || s.sprno.toLowerCase().includes(query);
+                    });
+                }
+                allStudents.filtered = filtered;
+                renderDropdown(filtered);
+            }
+        });
+
+        // Keyboard navigation
+        nameInput.addEventListener('keydown', (e) => {
+            const items = autocompleteList.querySelectorAll('.autocomplete-item');
+            if (!autocompleteList.classList.contains('open') || items.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                updateHighlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedIndex = Math.max(highlightedIndex - 1, 0);
+                updateHighlight(items);
+            } else if (e.key === 'Enter' && highlightedIndex >= 0) {
+                e.preventDefault();
+                selectStudent(allStudents.filtered[highlightedIndex]);
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+            }
+        });
+
+        function updateHighlight(items) {
+            items.forEach((item, i) => {
+                item.classList.toggle('highlighted', i === highlightedIndex);
+                if (i === highlightedIndex) {
+                    item.scrollIntoView({ block: 'nearest' });
+                }
+            });
+        }
+
+        // Close dropdown on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-wrapper')) {
+                closeDropdown();
+            }
+        });
+
+        // Form submission
+        document.getElementById('markAttendanceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('markBtn');
+            const msgContainer = document.getElementById('markMessageContainer');
+            
+            setBtnLoading(btn, true);
+            msgContainer.innerHTML = '';
+
+            const payload = { loggedInEmail: user.email };
+
+            if (selectedStudent) {
+                payload.studentSprno = selectedStudent.sprno;
+            } else {
+                const nameVal = document.getElementById('studentNameInput').value.trim();
+                if (!nameVal) {
+                    showToast('Please select or enter a student name', 'error');
+                    setBtnLoading(btn, false);
+                    return;
+                }
+                payload.studentName = nameVal;
+            }
+
+            try {
+                const res = await fetch('/api/attendance/mark', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    // Success Checkmark Animation
+                    msgContainer.innerHTML = `
+                        <div class="success-animation">
+                            <div class="checkmark-circle">
+                                <svg viewBox="0 0 52 52">
+                                    <path d="M14 27 l8 8 l16 -16" />
+                                </svg>
+                            </div>
+                            <div class="success-text">${data.message}</div>
+                        </div>
+                    `;
+                    showToast('Attendance marked successfully!', 'success');
+                    suppressDropdown = true;
+                    clearSelection(true);
+                    closeDropdown();
+                    document.getElementById('studentNameInput').blur();
+                    // Refresh stats
+                    loadClassStats();
+                    if (user.sprno) {
+                        loadStats(user.sprno);
+                        loadHistory(user.sprno);
+                    }
+                    // Optionally hide the button after success
+                    btn.style.display = 'none';
+                    setTimeout(() => {
+                        // Reset form after a few seconds
+                        msgContainer.innerHTML = '';
+                        btn.style.display = 'inline-flex';
+                    }, 4000);
+                } else {
+                    showToast(data.error || 'Failed to mark attendance', 'error');
+                }
+            } catch (err) {
+                showToast('Server error. Please try again.', 'error');
+            }
+            setBtnLoading(btn, false);
+        });
+        })();
+    </script>
+</body>
+</html>

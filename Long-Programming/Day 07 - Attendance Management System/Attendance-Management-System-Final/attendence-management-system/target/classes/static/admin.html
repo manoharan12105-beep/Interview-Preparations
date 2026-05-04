@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CSE B Attendance</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="admin-layout">
+    
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h2>📋 CSE B Admin</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="nav-link active" data-target="students-section"><span class="nav-icon">👥</span> Manage Students</a></li>
+            <li><a href="#" class="nav-link" data-target="daily-section"><span class="nav-icon">📊</span> Daily Report</a></li>
+            <li><a href="#" class="nav-link" data-target="monthly-section"><span class="nav-icon">📈</span> Monthly Analytics</a></li>
+            <li><a href="#" class="nav-link" data-target="holiday-section"><span class="nav-icon">📅</span> Holiday Calendar</a></li>
+            <li style="margin-top: 2rem;"><a href="#" onclick="logout()"><span class="nav-icon">🚪</span> Logout</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        
+        <!-- Students Section -->
+        <section id="students-section" class="section-content">
+            <div class="flex-between">
+                <h2>Manage Students</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-secondary" style="width: auto;" onclick="openDurationModal()">⏱ Change Duration</button>
+                    <button class="btn btn-primary" style="width: auto;" onclick="openAddStudentModal()">+ Add Student</button>
+                </div>
+            </div>
+            <div class="card">
+                <table id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>SPR No</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Daily/Weekly Section -->
+        <section id="daily-section" class="section-content section-hidden">
+            <div class="flex-between">
+                <h2>Daily Attendance</h2>
+                <input type="date" id="dailyDate" class="input" style="width: auto; padding: 0.5rem; border: 1px solid #ccc; border-radius:4px;">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="card" style="flex: 1; text-align: center; margin-bottom: 0; padding: 1rem;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-700); margin-bottom: 0.25rem;">Present</div>
+                    <div id="dailyPresentCount" style="font-size: 1.75rem; font-weight: 700; color: var(--secondary);">0</div>
+                </div>
+                <div class="card" style="flex: 1; text-align: center; margin-bottom: 0; padding: 1rem;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-700); margin-bottom: 0.25rem;">Absent</div>
+                    <div id="dailyAbsentCount" style="font-size: 1.75rem; font-weight: 700; color: var(--danger);">0</div>
+                </div>
+                <div class="card" style="flex: 1; text-align: center; margin-bottom: 0; padding: 1rem;">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gray-700); margin-bottom: 0.25rem;">Total</div>
+                    <div id="dailyTotalCount" style="font-size: 1.75rem; font-weight: 700; color: var(--primary);">0</div>
+                </div>
+            </div>
+            <div class="card">
+                <table id="dailyTable">
+                    <thead>
+                        <tr>
+                            <th>SPR No</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Marked By</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Monthly Analytics Section -->
+        <section id="monthly-section" class="section-content section-hidden">
+            <div class="flex-between">
+                <h2>Monthly Analytics</h2>
+                <input type="month" id="monthlyDate" class="input" style="width: auto; padding: 0.5rem; border: 1px solid #ccc; border-radius:4px;">
+            </div>
+            
+            <div class="card">
+                <h3>Daily Attendance Graph</h3>
+                <div style="height: 300px; margin-top: 1rem;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                    <button class="btn btn-primary" id="btnShowAll" onclick="showMonthlyTable('all')">All Students</button>
+                    <button class="btn btn-secondary" id="btnShowLow" onclick="showMonthlyTable('low')">Low Attendance (&lt; 75%)</button>
+                </div>
+
+                <div id="tableContainerAll">
+                    <h3>All Students Monthly Report</h3>
+                    <table id="monthlyTable" style="margin-top: 1rem;">
+                        <thead>
+                            <tr>
+                                <th>SPR No</th>
+                                <th>Name</th>
+                                <th>Present Days</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div id="tableContainerLow" style="display: none;">
+                    <h3 style="color: var(--danger)">Low Attendance Alert (&lt; 75%)</h3>
+                    <table id="alertTable" style="margin-top: 1rem;">
+                        <thead>
+                            <tr>
+                                <th>SPR No</th>
+                                <th>Name</th>
+                                <th>Present Days</th>
+                                <th>Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Holiday Calendar Section -->
+        <section id="holiday-section" class="section-content section-hidden">
+            <div class="flex-between">
+                <h2>Holiday Calendar</h2>
+                <input type="month" id="holidayMonth" class="input" style="width: auto; padding: 0.5rem; border: 1px solid #ccc; border-radius:4px;">
+            </div>
+            
+            <div class="card">
+                <p style="margin-bottom: 1rem; color: var(--secondary);">Click on a date to toggle it as a holiday. Holidays are excluded from the &lt; 75% attendance calculation.</p>
+                <div class="calendar-header">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Student Modal -->
+    <div class="modal-overlay" id="addStudentModal">
+        <div class="card" style="width: 440px; max-width: 90%; position: relative;">
+            <button onclick="closeAddStudentModal()" style="position:absolute; right:1rem; top:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--gray-700);">&times;</button>
+            <h3>Add New Student</h3>
+            <form id="addStudentForm" style="margin-top: 1.5rem;">
+                <div class="input-group">
+                    <label for="newSprno">SPR No</label>
+                    <input type="text" id="newSprno" required placeholder="e.g. 23CS001">
+                </div>
+                <div class="input-group">
+                    <label for="newFirstName">First Name</label>
+                    <input type="text" id="newFirstName" required placeholder="Enter first name">
+                </div>
+                <div class="input-group">
+                    <label for="newLastName">Last Name</label>
+                    <input type="text" id="newLastName" required placeholder="Enter last name">
+                </div>
+                <div class="input-group">
+                    <label for="newEmail">Email (optional)</label>
+                    <input type="email" id="newEmail" placeholder="student@example.com">
+                </div>
+                <div class="input-group">
+                    <label for="newPassword">Password</label>
+                    <input type="text" id="newPassword" value="password123" placeholder="Default: password123">
+                </div>
+                <button type="submit" class="btn btn-primary" id="addStudentBtn">
+                    <span class="btn-text">Add Student</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Duration Modal -->
+    <div class="modal-overlay" id="durationModal">
+        <div class="card" style="width: 400px; max-width: 90%; position: relative;">
+            <button onclick="closeDurationModal()" style="position:absolute; right:1rem; top:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--gray-700);">&times;</button>
+            <h3>Change Attendance Duration</h3>
+            <form id="durationForm" style="margin-top: 1.5rem;" onsubmit="saveDuration(event)">
+                <div class="input-group">
+                    <label>Start Time</label>
+                    <input type="time" id="durationStart" required>
+                </div>
+                <div class="input-group">
+                    <label>End Time</label>
+                    <input type="time" id="durationEnd" required>
+                </div>
+                <div class="input-group" style="flex-direction: row; align-items: center; gap: 0.5rem; justify-content: flex-start;">
+                    <input type="checkbox" id="durationTodayOnly" style="width: auto; margin: 0;">
+                    <label for="durationTodayOnly" style="margin: 0; font-weight: normal;">Apply for today only</label>
+                </div>
+                <button type="submit" class="btn btn-primary" id="saveDurationBtn" style="margin-top: 1rem;">
+                    <span class="btn-text">Save</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/app.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>
